@@ -1,49 +1,60 @@
-let menuItem = {
-  name: "Classic Cheeseburger",
-  price: 9.99,
-  category: "Burgers",
-  toppings: ["lettuce", "tomato", "onion", "pickles"],
-  nutrition: {
-    calories: 540,
-    protein: 28
+"use strict";
+
+function init() {
+ document.getElementById("meal-btn").addEventListener("click", fetchMeal);
+}
+
+function fetchMeal() {
+  let food = document.getElementById("food-input").value;
+  let url = "https://www.themealdb.com/api/json/v1/1/search.php?s=" + food;
+  fetch(url)
+    .then(statusCheck)
+    .then(resp => resp.json())
+    .then(showMeals)
+    .catch(handleError);
+}
+
+
+function showMeals(data) {
+  let mealOutput = document.getElementById("meal-output");
+  mealOutput.innerHTML = "";
+
+  if (data.meals === null) {
+    mealOutput.textContent = "Sorry, this is not on the menu!";
+    return;
   }
-};
 
-console.log(menuItem);
-console.log(JSON.stringify(menuItem));
-console.log(menuItem.name);
-console.log(menuItem["price"]);
-console.log(menuItem.toppings[2]); // Find alternate syntax here! use copilot chat
-console.log(menuItem.toppings[3]);
+  for (let i=0; i< data.meals.length; i++) {
+    let meal = data.meals[i];
+    let name = document.createElement("h3");
+    name.textContent = meal.strMeal;
 
-console.log(menuItem.nutrition.calories);
+    let category = document.createElement("p");
+    category.textContext = "Category: " + meal.strCategory;
 
-// Convert the JS object to a JSON string
-let jsonString = JSON.stringify(menuItem);
-console.log("JSON string:", jsonString);
-console.log("Type:", typeof jsonString);
+    let img = document.createElement("img");
+    img.src = meal.strMealThumn;
+    img.alt = meal.strMeal;
 
-// Convert the JSON string back to a JS object
-let parsedObj = JSON.parse(jsonString);
-console.log("Parsed object:", parsedObj);
-console.log("Type:", typeof parsedObj);
-console.log("Name:", parsedObj.name);
+    mealOutput.appendChild(name);
+    mealOutput.appendChild(category);
+    mealOutput.appendChild(img);
+  
 
-
-let myDinerOrder = {
-  name: "classic burrito",
-  price: 9.99,
-  category: "Burrito",
-  inclusions: ["rice", "beans", "chicken", "cheese"],
-  nutrition: {
-    calories: 400,
-    protein: 55
   }
-};
+}
 
-console.log(myDinerOrder);
-console.log(JSON.stringify(myDinerOrder));
-console.log(myDinerOrder.name);
-console.log(myDinerOrder["price"]);
-console.log(myDinerOrder.inclusions[3]);
-console.log(myDinerOrder.inclusions[2]);
+async function statusCheck(res) {
+  if (!res.ok) {
+    throw new Error(await res.text());
+  }
+  return res;
+}
+
+function handleError(err) {
+  console.error("Something went wrong:", err);
+  document.getElementById("output").textContent =
+    "The kitchen is closed! (Error loading data)";
+}
+
+init();
